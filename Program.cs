@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -45,10 +45,48 @@ class Program
             string[] positionParts = keyValuePair.Key.Split('-');
             int lineIndex = Int32.Parse(positionParts[0]) - 1;
             int charIndex = Int32.Parse(positionParts[1]) - 1;
+            
+            // var adjecentChars = FindSurroundingNumbers(lineIndex, charIndex);
+            var adjecentChars = FindAjcentNumbers(lineIndex, charIndex);
+
+            foreach (var adjecentChar in adjecentChars)
+            {
+                if (adjecentChar.Value != null && char.IsDigit(adjecentChar.Value.GetValueOrDefault()))
+                {
+                    Console.WriteLine($"{adjecentChar.Key} : {adjecentChar.Value}");
+                }
+                
+            }
         }
     }
 
-    static List<int> findAjcentNumbers(int lineIndex, int charIndex)
+    static List<string> FindSurroundingNumbers(int lineIndex, int charIndex)
+    {
+        List<string> surroundingNumbers = new List<string>();
+        int maxLineIndex = _coordinates.GetLength(0) - 1;
+        int maxCharIndex = _coordinates.GetLength(1) - 1;
+
+        for (int xMovement = -1; xMovement <= 1; xMovement++)
+        {
+            for (int yMovement = -1; yMovement <= 1; yMovement++)
+            {
+                if(xMovement == 0 && yMovement == 0) continue; //If on the current position, just move to the next position
+                int currentCol = charIndex + xMovement; //move left or right
+                int currentRow = lineIndex + yMovement; //move up or down
+                while (currentCol >= 0 && currentCol <= maxCharIndex && currentRow >= 0 && currentRow <= maxLineIndex &&
+                       char.IsDigit(_coordinates[currentRow, currentCol]))
+                {
+                    surroundingNumbers.Add(_coordinates[currentRow, currentCol].ToString() + ", ");
+                    currentCol += xMovement;
+                    currentRow += yMovement;
+                }
+            }
+        }
+
+        return surroundingNumbers;
+    }
+    
+    static List<KeyValuePair<string, char?>> FindAjcentNumbers(int lineIndex, int charIndex)
     {
         Dictionary<string, char?> adjacentChars = new Dictionary<string, char?>
         {
@@ -62,27 +100,47 @@ class Program
             {"northWest", null},
         };
         
-        //Don't look north
-        if (lineIndex == 0)
+        int maxLineIndex = _coordinates.GetLength(0) - 1;
+        int maxCharIndex = _coordinates.GetLength(1) - 1;
+
+        // Don't look north if lineIndex is 0
+        if (lineIndex > 0)
         {
-            adjacentChars["east"] = _coordinates[lineIndex, charIndex + 1];
-            adjacentChars["southEast"] = _coordinates[lineIndex - 1, charIndex + 1];
-            adjacentChars["south"] = _coordinates[lineIndex - 1, charIndex];
-            adjacentChars["southWest"] = _coordinates[lineIndex - 1, charIndex - 1];
-            adjacentChars["west"] = _coordinates[lineIndex, charIndex - 1];
+            adjacentChars["north"] = _coordinates[lineIndex - 1, charIndex];
+
+            // Don't look west if charIndex is 0
+            if (charIndex > 0)
+                adjacentChars["northWest"] = _coordinates[lineIndex - 1, charIndex - 1];
+
+            // Don't look east if charIndex is at the maximum
+            if (charIndex < maxCharIndex)
+                adjacentChars["northEast"] = _coordinates[lineIndex - 1, charIndex + 1];
         }
 
-        //Don't look south
-        if (lineIndex == 139)
+        // Don't look south if lineIndex is at the maximum
+        if (lineIndex < maxLineIndex)
         {
-            adjacentChars["north"] = _coordinates[lineIndex + 1, charIndex];
-            adjacentChars["northEast"] = _coordinates[lineIndex + 1, charIndex + 1];
-            adjacentChars["east"] = _coordinates[lineIndex, charIndex + 1];
-            adjacentChars["west"] = _coordinates[lineIndex, charIndex - 1];
-            adjacentChars["northWest"] = _coordinates[lineIndex + 1, charIndex - 1];
+            adjacentChars["south"] = _coordinates[lineIndex + 1, charIndex];
+
+            // Don't look west if charIndex is 0
+            if (charIndex > 0)
+                adjacentChars["southWest"] = _coordinates[lineIndex + 1, charIndex - 1];
+
+            // Don't look east if charIndex is at the maximum
+            if (charIndex < maxCharIndex)
+                adjacentChars["southEast"] = _coordinates[lineIndex + 1, charIndex + 1];
         }
-        
-        return new List<int>();
+
+        // Don't look west if charIndex is 0
+        if (charIndex > 0)
+            adjacentChars["west"] = _coordinates[lineIndex, charIndex - 1];
+
+        // Don't look east if charIndex is at the maximum
+        if (charIndex < maxCharIndex)
+            adjacentChars["east"] = _coordinates[lineIndex, charIndex + 1];
+
+        var result = adjacentChars.ToList();
+        return result;
     }
 }
 
