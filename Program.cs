@@ -47,16 +47,20 @@ class Program
             int charIndex = Int32.Parse(positionParts[1]) - 1;
             
             // var adjecentChars = FindSurroundingNumbers(lineIndex, charIndex);
-            var adjecentChars = FindAjcentNumbers(lineIndex, charIndex);
+            var adjecentNumbers = FindSurroundingNumbers(lineIndex, charIndex);
 
-            foreach (var adjecentChar in adjecentChars)
+            foreach (var adjecentNumber in adjecentNumbers)
             {
-                if (adjecentChar.Value != null && char.IsDigit(adjecentChar.Value.GetValueOrDefault()))
-                {
-                    Console.WriteLine($"{adjecentChar.Key} : {adjecentChar.Value}");
-                }
-                
+                Console.WriteLine(adjecentNumber);
             }
+            // foreach (var adjecentChar in adjecentChars)
+            // {
+            //     if (adjecentChar.Value != null && char.IsDigit(adjecentChar.Value.GetValueOrDefault()))
+            //     {
+            //         Console.WriteLine($"{adjecentChar.Key} : {adjecentChar.Value}");
+            //     }
+            //     
+            // }
         }
     }
 
@@ -76,7 +80,22 @@ class Program
                 while (currentCol >= 0 && currentCol <= maxCharIndex && currentRow >= 0 && currentRow <= maxLineIndex &&
                        char.IsDigit(_coordinates[currentRow, currentCol]))
                 {
-                    surroundingNumbers.Add(_coordinates[currentRow, currentCol].ToString() + ", ");
+                    string number = "";
+                    //Found a digit, now look left and right for another digit
+                    string leftNumber = "", rightNumber = "";
+                    if (char.IsDigit(_coordinates[currentRow, currentCol - 1]))
+                    {
+                        leftNumber = _coordinates[currentRow, currentCol - 1].ToString();
+                    }
+
+                    if (char.IsDigit(_coordinates[currentRow, currentCol + 1]))
+                    {
+                        rightNumber = _coordinates[currentRow, currentCol + 1].ToString();
+                    }
+
+                    number = $"{leftNumber}{_coordinates[currentRow, currentCol].ToString()}{rightNumber}";
+                    
+                    surroundingNumbers.Add(number);
                     currentCol += xMovement;
                     currentRow += yMovement;
                 }
